@@ -5,7 +5,7 @@ clear;
 ndim=6;
 g=9.81;
 fixnodes=[10735 13699 16620 19625 22511 4747];
-
+refnode=1305;
 % LOADING DATA
 load("fe_model.mat");
 
@@ -14,7 +14,7 @@ TotalDOF=size(K,1);
 nnodes = TotalDOF/ndim;
 
 % UNITS
-M = M*1e3; % From tons to kgs
+M = M*1e3; % From tons to kg
 K = K*1e6;% From kN/mm to N/m
 
 
@@ -40,10 +40,32 @@ uD = zeros(length(DirichlettDOF),1);
 
 uN = KNN\(fN-(KND*uD));
 
+u=zeros(TotalDOF,1);
+u(DirichlettDOF)=uD;
+u(NeumannDOF)=uN;
+
 % Calculation of the Dirichlett forces
 fD = KDD*uD+KDN*uN;
 
 %%% OTHER CALCULATIONS
 % Calculation of the mass in kg
-W = sum(fN)/-9.81;
+mass = sum(diag(M))/3;
 
+
+%%%Check if Dirichlett forces in y direction are equal to weight
+repmat([0 1 0 0 0 0],1,6)*fD-mass*g<1e-6
+
+%%% Displacements of reference node
+
+u_ref=u((refnode-1)*ndim+1:refnode*ndim)
+
+
+%%%MODAL ANALYSIS
+neig=15;
+
+[MODES EIGENVAL] = eigs(K,M,neig,'sm') ; 
+EIGENVAL = diag(EIGENVAL) ; 
+FREQ = sqrt(EIGENVAL) ;  
+
+[FREQ,imodes] = sort(FREQ) ;
+MODES= MODES(:,imodes); 
