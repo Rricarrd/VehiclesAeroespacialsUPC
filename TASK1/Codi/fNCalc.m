@@ -7,7 +7,7 @@ function fN = fNCalc(g, nnodes,M,NeumannDOF)
 %
 
 
-accDOF = sparse( g*[0,-1,0,0,0,0]); % Gravity acceleration vector applied to the Y axis (X,Y,Z,R1,R2,R3)
+accDOF = sparse( g*[0,1,0,0,0,0]); % Gravity acceleration vector applied to the Y axis (X,Y,Z,R1,R2,R3)
 
 acc = repmat(accDOF, 1, nnodes); % Assemply of the vector for each node
 

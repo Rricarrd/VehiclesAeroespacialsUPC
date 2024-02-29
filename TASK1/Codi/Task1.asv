@@ -15,7 +15,7 @@ nnodes = TotalDOF/ndim;
 
 % UNITS
 M = M*1e3; % From tons to kg
-K = K*1e3; % From N/mm to N/m
+K = K*1e3;% From N/mm to N/m
 
 
 %% %%% STATIC ANALYSIS
@@ -38,6 +38,7 @@ uN = KNN\(fN-(KND*uD));
 
 % Calculation of the Dirichlett forces
 fD = KDD*uD+KDN*uN;
+
 
 % Total displacements and forces vectors
 u=zeros(TotalDOF,1);
