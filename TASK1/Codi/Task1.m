@@ -23,30 +23,8 @@ K = K*1e3; % From N/mm to N/m
 % Generating Neumann and Dirichlett DOFs
 [DirichlettDOF, NeumannDOF] = VectorsDOF(TotalDOF, fixnodes, ndim);
 
-%%% K MATRIX SUBPARTS
-[KNN, KND, KDN, KDD] = KSubparts(K, NeumannDOF, DirichlettDOF);
+[u,F] = StaticSolver(K,M,NeumannDOF,DirichlettDOF,nnodes);
 
-%%% FORCES AND DISPLACEMENTS
-% Calculation of the Neumann force vector
-fN = fNCalc(g, nnodes, M, NeumannDOF); % Force calculation in N
-
-% Calculation of the Dirichlett displacement
-uD = zeros(length(DirichlettDOF),1);
-
-% Calculation of the Neumann displacements
-uN = KNN\(fN-(KND*uD));
-
-% Calculation of the Dirichlett forces
-fD = KDD*uD+KDN*uN;
-
-% Total displacements and forces vectors
-u=zeros(TotalDOF,1);
-u(DirichlettDOF)=uD;
-u(NeumannDOF)=uN;
-
-f=zeros(TotalDOF,1);
-f(DirichlettDOF)=fD;
-f(NeumannDOF)=fN;
 
 %%% REACTIONS CHECK
 % Calculation of the mass in kg
@@ -56,6 +34,26 @@ w_error = repmat([0 1 0 0 0 0],1,6)*fD+mass*g;
 w_error<1e-6;
 %%% Displacements of reference node
 u_ref=u((refnode-1)*ndim+1:refnode*ndim);
+
+%PRINT RESULTS TO HDF5
+uhdf=zeros(nnodes,ndim);
+for i=1:ndim
+    uhdf(:,i)=u(i:ndim:end);
+end
+fillhdf("template.h5","Part1Output.h5",uhdf);
+
+%% %%%%
+%PART 2
+%Compute the displacements and rotations of 
+% the reference node due to enforced unit displacements in y direction in
+%each support.
+%Change of prescribed displacements 
+uD = zeros(length(DirichlettDOF),1);
+Support=1;
+uD(2*(Support-1)*ndim+1)=1e-3; %m to mm
+
+[u,F] = StaticSolver(K,M,NeumannDOF,DirichlettDOF,nnodes);
+
 
 
 %% %%% DYNAMIC ANALYSIS
