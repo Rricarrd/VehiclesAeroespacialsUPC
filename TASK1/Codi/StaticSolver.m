@@ -1,11 +1,11 @@
-function [u,F] = StaticSolver(K,M,NeumannDOF,DirichlettDOF,nnodes)
+function [u,F] = StaticSolver(K,M,NeumannDOF,DirichlettDOF,TotalDOF,nnodes,g)
 %Solves the linear system
 %%% K MATRIX SUBPARTS
 [KNN, KND, KDN, KDD] = KSubparts(K, NeumannDOF, DirichlettDOF);
 
 %%% FORCES AND DISPLACEMENTS
 % Calculation of the Neumann force vector
-fN = fNCalc(g, nnodes, M, NeumannDOF); % Force calculation in N
+fN = fNCalc(g,nnodes,M,NeumannDOF); % Force calculation in N
 
 % Calculation of the Dirichlett displacement
 uD = zeros(length(DirichlettDOF),1);

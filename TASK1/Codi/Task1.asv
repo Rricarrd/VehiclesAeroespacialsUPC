@@ -6,7 +6,6 @@ ndim=6;
 g=9.81;
 fixnodes=[10735 13699 16620 19625 22511 4747];
 refnode=1305;
-
 % LOADING DATA
 load("fe_model.mat");
 
@@ -76,5 +75,6 @@ MNN = M(NeumannDOF,NeumannDOF);
 [MODES_U, FREQ_U] = modResponse(K,M,neig);
 
 %%% RESPONSE ANALYSIS
+s
 
 
