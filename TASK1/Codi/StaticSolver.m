@@ -1,7 +1,24 @@
-function [u,F] = StaticSolver(K,M,TotalDOF,nnodes,g,fixnodes,ndim,Part,Support)
+function [u,F,DirichlettDOF] = StaticSolver(K,M,TotalDOF,nnodes,g,fixnodes,ndim,Part,Support)
 
 % Generating Neumann and Dirichlett DOFs
 [DirichlettDOF, NeumannDOF] = VectorsDOF(TotalDOF, fixnodes, ndim);
+
+% Calculation of the Dirichlett displacement
+if (strcmp(Part,'Part1'))
+    uD = zeros(length(DirichlettDOF),1);
+elseif(strcmp(Part,'Part2a'))
+    uD = zeros(length(DirichlettDOF),1);
+    uD((Support-1)*ndim+2)=1e-3; %m to mm 
+elseif(strcmp(Part,'Part2b'))
+    DirichlettDOF(2:6:end)=[]; %Remove the y DOF to compute shim height
+    DirichlettDOF(end+1)=(1305-1)*ndim+4; %Prescribed rotation around x
+    DirichlettDOF(end+1)=(1305-1)*ndim+6; %Prescribed rotation around z  
+    uD = zeros(length(DirichlettDOF),1);
+    uD(end-1)=500e-6; %Prescribed rotation around x
+    uD(end)=-200e-6; %Prescribed rotation around z
+    NeumannDOF = (1:TotalDOF)';
+    NeumannDOF(DirichlettDOF) = [];
+end
 
 %Solves the linear system
 %%% K MATRIX SUBPARTS
@@ -11,15 +28,6 @@ function [u,F] = StaticSolver(K,M,TotalDOF,nnodes,g,fixnodes,ndim,Part,Support)
 % Calculation of the Neumann force vector
 fN = fNCalc(g,nnodes,M,NeumannDOF); % Force calculation in N
 
-% Calculation of the Dirichlett displacement
-if (strcmp(Part,'Part1'))
-    uD = zeros(length(DirichlettDOF),1);
-elseif(strcmp(Part,'Part2a'))
-    uD = zeros(length(DirichlettDOF),1);
-    uD(2*(Support-1)*ndim+2)=1e-3; %m to mm %%%%ESTA MALAMENT
-elseif(strcmp(Part,'Part2b'))
-    
-end
 % Calculation of the Neumann displacements
 uN = KNN\(fN-(KND*uD));
 
@@ -35,11 +43,6 @@ F=zeros(TotalDOF,1);
 F(DirichlettDOF)=fD;
 F(NeumannDOF)=fN;
 
-%%% REACTIONS CHECK
-% Calculation of the mass in kg
-mass = sum(diag(M))/3;
-%Check if Dirichlett forces in y direction are equal to weight
-w_error = repmat([0 1 0 0 0 0],1,6)*F(DirichlettDOF)+mass*g;
-w_error<1e-6;
+
 
 end
