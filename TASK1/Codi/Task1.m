@@ -15,8 +15,9 @@ TotalDOF=size(K,1);
 nnodes = TotalDOF/ndim;
 
 % UNITS
-M = M*1e3; % From tons to kg
-K = K*1e3; % From N/mm to N/m
+
+M = M*1000; % From tons to kg
+K = K*1000; % From N/mm to N/m
 
 
 %%%%%% STATIC ANALYSIS
@@ -68,7 +69,7 @@ u_shim=u_shim(2:6:end);
 
 %%%%%% DYNAMIC ANALYSIS
 %% %%% PART 1: MODAL ANALYSIS
-neig=5;
+neig=11;
 f_max = 2000;
 [KNN,KND, KDN, KDD] = KSubparts(K, NeumannDOF, DirichlettDOF);
 
@@ -79,7 +80,7 @@ MNN = M(NeumannDOF,NeumannDOF);
 [MODES, FREQ] = modResponse(KNN,MNN,neig);
 
 % Modal response unconstrained
-%[MODES_U, FREQ_U] = modResponse(K,M,neig);
+[MODES_U, FREQ_U] = modResponse(K,M,neig);
 
 %% %%% PART 2: RESPONSE ANALYSIS
 damping = 0;
