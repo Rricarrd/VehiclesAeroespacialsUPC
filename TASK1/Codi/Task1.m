@@ -4,7 +4,7 @@ clear;
 %INPUT PARAMETERS
 ndim=6;
 g=9.81;
-fixnodes=[10735 13699 16620 19625 22511 4747];
+fixnodes=[10735 13699 16620 19625 22511 4747]';
 refnode=1305;
 
 % LOADING DATA
@@ -22,19 +22,9 @@ K = K*1e3; % From N/mm to N/m
 %% %%% STATIC ANALYSIS
 %%% PART 1
 %%% DIRICHLETT AND NEUMANN LOCATIONS
-% Generating Neumann and Dirichlett DOFs
-[DirichlettDOF, NeumannDOF] = VectorsDOF(TotalDOF, fixnodes, ndim);
-
-[u,F] = StaticSolver(K,M,NeumannDOF,DirichlettDOF,TotalDOF,nnodes,g);
-
-
-%%% REACTIONS CHECK
-% Calculation of the mass in kg
-mass = sum(diag(M))/3;
-%Check if Dirichlett forces in y direction are equal to weight
-w_error = repmat([0 1 0 0 0 0],1,6)*F(DirichlettDOF)+mass*g;
-w_error<1e-6;
-
+Part='Part1';
+Support=1;
+[u,F] = StaticSolver(K,M,TotalDOF,nnodes,g,fixnodes,ndim,Part,Support);
 
 %PRINT RESULTS TO HDF5
 uhdf=zeros(nnodes,ndim);
@@ -53,11 +43,9 @@ fillhdf("template.h5","Part1Output.h5",uhdf);
 u_ref=u((refnode-1)*ndim+1:refnode*ndim);
 
 %Change of prescribed displacements 
-uD = zeros(length(DirichlettDOF),1);
 Support=1;
-uD(2*(Support-1)*ndim+1)=1e-3; %m to mm
-
-[u,F] = StaticSolver(K,M,NeumannDOF,DirichlettDOF,TotalDOF,nnodes,g);
+Part='Part2a';
+[u,F] = StaticSolver(K,M,TotalDOF,nnodes,g,fixnodes,ndim,Part,Support);
 
 
 
