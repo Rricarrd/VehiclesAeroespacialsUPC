@@ -1,14 +1,13 @@
-function [u,F,DirichlettDOF] = StaticSolver(K,M,TotalDOF,nnodes,g,fixnodes,ndim,Part,Support)
-
-% Generating Neumann and Dirichlett DOFs
-[DirichlettDOF, NeumannDOF] = VectorsDOF(TotalDOF, fixnodes, ndim);
+function [u,F] = StaticSolver(K,M,TotalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support)
 
 % Calculation of the Dirichlett displacement
 if (strcmp(Part,'Part1'))
     uD = zeros(length(DirichlettDOF),1);
+
 elseif(strcmp(Part,'Part2a'))
     uD = zeros(length(DirichlettDOF),1);
     uD((Support-1)*ndim+2)=1e-3; %m to mm 
+
 elseif(strcmp(Part,'Part2b'))
     DirichlettDOF(2:6:end)=[]; %Remove the y DOF to compute shim height
     DirichlettDOF(end+1)=(1305-1)*ndim+4; %Prescribed rotation around x
