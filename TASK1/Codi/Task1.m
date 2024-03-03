@@ -30,7 +30,7 @@ K = K*1000; % From N/mm to N/m
 % BODY FORCES SOLUTION
 Part='Part1';
 Support=1;
-dir = 'Y';
+dir = 'Z';
 [u,F] = StaticSolver(K,M,TotalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support,dir);
 
 %%% REACTIONS CHECK
@@ -45,7 +45,7 @@ F_supports = F(DirichlettDOF);
 %PRINT RESULTS TO HDF5
 uhdf=zeros(nnodes,ndim);
 for i=1:ndim
-    uhdf(:,i)=u(i:ndim:end)/1000; % back to mm
+    uhdf(:,i)=u(i:ndim:end)*1000; % back to mm
 end
 output_name = "Output/Part1Output" + dir + ".h5";
 fillhdf("template.h5",output_name,uhdf);
@@ -98,7 +98,7 @@ for j = 1:neig-6
     uhdf=zeros(nnodes,ndim);
     for i=1:ndim
         column = MODES_TOT(:, j);
-        uhdf(:,i)=column(i:ndim:end)/1000; % back to mm
+        uhdf(:,i)=column(i:ndim:end)*1000; % back to mm
     end
     output_name = "Output/Part3OutputConstrained" + j + ".h5";
     fillhdf("template.h5",output_name,uhdf);
@@ -120,7 +120,7 @@ for j = 7:neig
     uhdf=zeros(nnodes,ndim);
     for i=1:ndim
         column = MODES_TOT(:, j);
-        uhdf(:,i)=column(i:ndim:end)/1000; % back to mm
+        uhdf(:,i)=column(i:ndim:end)*1000; % back to mm
     end
     output_name = "Output/Part3OutputUnconstrained" + j + ".h5";
     fillhdf("template.h5",output_name,uhdf);
@@ -140,8 +140,12 @@ damping = 0.02;
 X_ref_damped = X_damped(refnode,:);
 
 figure(1)
-plot(f_values, abs(X_ref))
+% plot(f_values(1:values/2), abs(X_ref(1:values/2))*10^6)
 
 hold on
-plot(f_values, abs(X_ref_damped))
+plot(f_values(1:values/2), abs(X_ref_damped(1:values/2))*10^6)
 hold off
+
+xlabel("Frequency (Hz)", Interpreter="latex")
+ylabel("Amplitude ($\mu m$)", Interpreter="latex")
+title("Damped frequency response up to 2000Hz", Interpreter="latex")
