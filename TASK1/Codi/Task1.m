@@ -30,7 +30,7 @@ K = K*1000; % From N/mm to N/m
 % BODY FORCES SOLUTION
 Part='Part1';
 Support=1;
-dir = 'Z';
+dir = 'Y';
 [u,F] = StaticSolver(K,M,TotalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support,dir);
 
 %%% REACTIONS CHECK
@@ -47,7 +47,7 @@ uhdf=zeros(nnodes,ndim);
 for i=1:ndim
     uhdf(:,i)=u(i:ndim:end);
 end
-output_name = "Part1Output" + dir + ".h5";
+output_name = "Output/Part1Output" + dir + ".h5";
 fillhdf("template.h5",output_name,uhdf);
 
 %% %%%% PART 2
@@ -55,13 +55,15 @@ fillhdf("template.h5",output_name,uhdf);
 %Compute the displacements and rotations of the referencenode due
 %to enforced unit displacements in y direction in each support.
 
-
 %Change of prescribed displacements 
 dir = 'Y';
 Support=1;
 Part='Part2a';
 [u,F] = StaticSolver(K,M,TotalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support,dir);
 
+% Displacements of reference node after imposing displacements of the
+% dirichlett nodes in y direction
+u_ref_2a=u((refnode-1)*ndim+1:refnode*ndim)*1e3; % m to mm
 
 % SHIMS CALCULATIONS
 fixnodes=[10735 13699 16620 19625 22511 4747 1305];
@@ -80,11 +82,50 @@ f_max = 2000;
 % Constrained masses
 MNN = M(NeumannDOF,NeumannDOF);
 
-% Modal response constrained
+%% Modal response constrained
 [MODES, FREQ] = modResponse(KNN,MNN,neig);
+FREQ_HZ = FREQ/(2*pi);
 
-% Modal response unconstrained
+% Build the displacements for each node
+MODES_TOT=zeros(TotalDOF,neig);
+for i = 1:neig
+    MODES_TOT(DirichlettDOF, i) = 0;
+    MODES_TOT(NeumannDOF, i)=MODES(:,i);
+end
+
+% Save modes in the uhdf file
+for j = 1:neig-6
+    uhdf=zeros(nnodes,ndim);
+    for i=1:ndim
+        column = MODES_TOT(:, j);
+        uhdf(:,i)=column(i:ndim:end);
+    end
+    output_name = "Output/Part3OutputConstrained" + j + ".h5";
+    fillhdf("template.h5",output_name,uhdf);
+end
+
+%% Modal response unconstrained
 [MODES_U, FREQ_U] = modResponse(K,M,neig);
+FREQ_HZ_U = FREQ_U/(2*pi);
+
+% Build the displacements for each node
+MODES_TOT_U=zeros(TotalDOF,neig);
+for i = 1:neig
+    MODES_TOT_U(DirichlettDOF, i)=0;
+    MODES_TOT_U(NeumannDOF, i)=MODES(:,i);
+end
+
+% Save modes in the uhdf file
+for j = 7:neig
+    uhdf=zeros(nnodes,ndim);
+    for i=1:ndim
+        column = MODES_TOT(:, j);
+        uhdf(:,i)=column(i:ndim:end);
+    end
+    output_name = "Output/Part3OutputUnconstrained" + j + ".h5";
+    fillhdf("template.h5",output_name,uhdf);
+end
+
 
 %% %%% PART 2: RESPONSE ANALYSIS
 damping = 0;
