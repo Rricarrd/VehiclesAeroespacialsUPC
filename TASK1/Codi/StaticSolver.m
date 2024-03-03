@@ -1,4 +1,4 @@
-function [u,F] = StaticSolver(K,M,TotalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support)
+function [u,F] = StaticSolver(K,M,TotalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support,dir)
 
 % Calculation of the Dirichlett displacement
 if (strcmp(Part,'Part1'))
@@ -25,7 +25,7 @@ end
 
 %%% FORCES AND DISPLACEMENTS
 % Calculation of the Neumann force vector
-fN = fNCalc(g,nnodes,M,NeumannDOF); % Force calculation in N
+fN = fNCalc(g,nnodes,M,NeumannDOF, dir); % Force calculation in N
 
 % Calculation of the Neumann displacements
 uN = KNN\(fN-(KND*uD));

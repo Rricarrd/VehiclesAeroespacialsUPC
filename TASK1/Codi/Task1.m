@@ -1,5 +1,5 @@
 clear;
-
+clc;
 %% %%%% PREPROCESSING
 %INPUT PARAMETERS
 ndim=6;
@@ -30,39 +30,43 @@ K = K*1000; % From N/mm to N/m
 % BODY FORCES SOLUTION
 Part='Part1';
 Support=1;
-[u,F] = StaticSolver(K,M,TotalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support);
+dir = 'Z';
+[u,F] = StaticSolver(K,M,TotalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support,dir);
 
 %%% REACTIONS CHECK
-% Calculation of the mass in kg
-mass = sum(diag(M))/3;
-%Check if Dirichlett forces in y direction are equal to weight
-w_error = repmat([0 1 0 0 0 0],1,6)*F(DirichlettDOF)+mass*g;
+[w_error,mass] = reactionsCheck(M,F,g,DirichlettDOF,dir);
+
+% Displacements of reference node
+u_ref=u((refnode-1)*ndim+1:refnode*ndim)*10^6;
+
+% Forces at supports
+F_supports = F(DirichlettDOF);
 
 %PRINT RESULTS TO HDF5
 uhdf=zeros(nnodes,ndim);
 for i=1:ndim
     uhdf(:,i)=u(i:ndim:end);
 end
-fillhdf("template.h5","Part1Output.h5",uhdf);
+output_name = "Part1Output" + dir + ".h5";
+fillhdf("template.h5",output_name,uhdf);
 
 %% %%%% PART 2
 %%% DISPLACEMENTS AND ROTATIONS
 %Compute the displacements and rotations of the referencenode due
 %to enforced unit displacements in y direction in each support.
 
-% Displacements of reference node
-u_ref=u((refnode-1)*ndim+1:refnode*ndim);
 
 %Change of prescribed displacements 
+dir = 'Y';
 Support=1;
 Part='Part2a';
-[u,F] = StaticSolver(K,M,TotalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support);
+[u,F] = StaticSolver(K,M,TotalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support,dir);
 
 
 % SHIMS CALCULATIONS
 fixnodes=[10735 13699 16620 19625 22511 4747 1305];
 Part='Part2b';
-[u_shim,F_shim] = StaticSolver(K,M,TotalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support);
+[u_shim,F_shim] = StaticSolver(K,M,TotalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support,dir);
 
 u_shim=u_shim(DirichlettDOF);
 u_shim=u_shim(2:6:end);
