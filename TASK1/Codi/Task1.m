@@ -45,7 +45,7 @@ F_supports = F(DirichlettDOF);
 %PRINT RESULTS TO HDF5
 uhdf=zeros(nnodes,ndim);
 for i=1:ndim
-    uhdf(:,i)=u(i:ndim:end);
+    uhdf(:,i)=u(i:ndim:end)/1000; % back to mm
 end
 output_name = "Output/Part1Output" + dir + ".h5";
 fillhdf("template.h5",output_name,uhdf);
@@ -98,7 +98,7 @@ for j = 1:neig-6
     uhdf=zeros(nnodes,ndim);
     for i=1:ndim
         column = MODES_TOT(:, j);
-        uhdf(:,i)=column(i:ndim:end);
+        uhdf(:,i)=column(i:ndim:end)/1000; % back to mm
     end
     output_name = "Output/Part3OutputConstrained" + j + ".h5";
     fillhdf("template.h5",output_name,uhdf);
@@ -120,7 +120,7 @@ for j = 7:neig
     uhdf=zeros(nnodes,ndim);
     for i=1:ndim
         column = MODES_TOT(:, j);
-        uhdf(:,i)=column(i:ndim:end);
+        uhdf(:,i)=column(i:ndim:end)/1000; % back to mm
     end
     output_name = "Output/Part3OutputUnconstrained" + j + ".h5";
     fillhdf("template.h5",output_name,uhdf);
