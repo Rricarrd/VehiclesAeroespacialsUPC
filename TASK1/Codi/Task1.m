@@ -1,23 +1,33 @@
 clear;
 
 %% %%%% PREPROCESSING
+
+
+% STRUCTURES
+params = struct('ndim',[],'g',[],'fixnodes',[],'refnode',[],'totalDOF',[],'nnodes',[]);
+nodes = struct('DirichlettDOF',[],'NeumannDOF',[]);
+mats = struct('K',[],'M',[]);
+submats = struct('KNN',[],'KND',[],'KDN',[],'KDD',[],'MNN',[]);
+results = struct('u',[],'f',[],'w_error',[],'mass',[]);
+
 %INPUT PARAMETERS
-ndim=6;
-g=9.81;
-fixnodes=[10735 13699 16620 19625 22511 4747];
-refnode=1305;
+params.ndim=6;
+params.g=9.81;
+params.fixnodes=[10735 13699 16620 19625 22511 4747];
+params.refnode=1305;
 
 % LOADING DATA
 load("fe_model.mat");
 
 % PARAMETERS
-TotalDOF=size(K,1);
-nnodes = TotalDOF/ndim;
+params.totalDOF=size(K,1);
+params.nnodes = params.totalDOF/params.ndim;
 
 % UNITS
 
-M = M*1000; % From tons to kg
-K = K*1000; % From N/mm to N/m
+mats.M = M*1000; % From tons to kg
+mats.K = K*1000; % From N/mm to N/m
+
 
 
 %%%%%% STATIC ANALYSIS
@@ -25,18 +35,18 @@ K = K*1000; % From N/mm to N/m
 %%% DIRICHLETT AND NEUMANN LOCATIONS
 
 % Generating Neumann and Dirichlett DOFs
-[DirichlettDOF, NeumannDOF] = VectorsDOF(TotalDOF, fixnodes, ndim);
+[nodes.DirichlettDOF, nodes.NeumannDOF] = VectorsDOF(params);
 
 % BODY FORCES SOLUTION
 Part='Part1';
 Support=1;
-[u,F] = StaticSolver(K,M,TotalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support);
+[results.u,results.F] = StaticSolver(params,mats,nodes,Part,Support);
 
 %%% REACTIONS CHECK
 % Calculation of the mass in kg
-mass = sum(diag(M))/3;
+results.mass = sum(diag(M))/3;
 %Check if Dirichlett forces in y direction are equal to weight
-w_error = repmat([0 1 0 0 0 0],1,6)*F(DirichlettDOF)+mass*g;
+results.w_error = repmat([0 1 0 0 0 0],1,params.ndim)*results.F(nodes.DirichlettDOF)+results.mass*params.g;
 
 %PRINT RESULTS TO HDF5
 uhdf=zeros(nnodes,ndim);
@@ -56,13 +66,13 @@ u_ref=u((refnode-1)*ndim+1:refnode*ndim);
 %Change of prescribed displacements 
 Support=1;
 Part='Part2a';
-[u,F] = StaticSolver(K,M,TotalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support);
+[u,F] = StaticSolver(K,M,totalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support);
 
 
 % SHIMS CALCULATIONS
 fixnodes=[10735 13699 16620 19625 22511 4747 1305];
 Part='Part2b';
-[u_shim,F_shim] = StaticSolver(K,M,TotalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support);
+[u_shim,F_shim] = StaticSolver(K,M,totalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support);
 
 u_shim=u_shim(DirichlettDOF);
 u_shim=u_shim(2:6:end);

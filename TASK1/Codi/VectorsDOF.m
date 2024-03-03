@@ -1,9 +1,9 @@
-function [DirichlettDOF,NeumannDOF] = VectorsDOF(TotalDOF, fixnodes, ndim)
+function [DirichlettDOF,NeumannDOF] = VectorsDOF(params)
 % Generating vector with the fixed DOFs (Dirichlett Conditon)
-DirichlettDOF = fixDof(fixnodes, ndim);
+DirichlettDOF = fixDof(params.fixnodes, params.ndim);
 
 % Genrating vector with the free DOFs (Neumann Conditon)
-NeumannDOF = (1:TotalDOF)';
+NeumannDOF = (1:params.totalDOF)';
 NeumannDOF(DirichlettDOF) = [];
 end
 
