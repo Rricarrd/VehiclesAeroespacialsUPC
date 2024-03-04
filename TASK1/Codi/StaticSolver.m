@@ -17,6 +17,12 @@ elseif(strcmp(Part,'Part2b'))
     uD(end)=-200e-6; %Prescribed rotation around z
     NeumannDOF = (1:TotalDOF)';
     NeumannDOF(DirichlettDOF) = [];
+elseif(strcmp(Part,'ShimCheck'))
+    uD = zeros(length(DirichlettDOF),1);
+      uD(2:6:end)=[0.0333 0.0602 0.0289 -0.0432 -0.0621 -0.0172]; %ushim-mean(ushim)
+      %uD(2:6:end)=[0.992 0.955 0.954 1.054 1.053 0.991]; %VIGILAR
+    
+
 end
 
 %Solves the linear system

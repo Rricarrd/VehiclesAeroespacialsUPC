@@ -16,7 +16,7 @@ end
 
 acc = repmat(accDOF, 1, nnodes); % Assemply of the vector for each node
 
-fN = acc * M; % Force calculation
+fN = acc * M; % Force calculation %m/s*s *kg 
 
 fN = fN(NeumannDOF)';
 end

@@ -30,7 +30,7 @@ K = K*1000; % From N/mm to N/m
 % BODY FORCES SOLUTION
 Part='Part1';
 Support=1;
-dir = 'Z';
+dir = 'Y';
 [u,F] = StaticSolver(K,M,TotalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support,dir);
 
 %%% REACTIONS CHECK
@@ -72,6 +72,10 @@ Part='Part2b';
 
 u_shim=u_shim(DirichlettDOF);
 u_shim=u_shim(2:6:end);
+
+Part='ShimCheck';
+[u_check,F_check] = StaticSolver(K,M,TotalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support,dir);
+u_ref_check=u_check((refnode-1)*ndim+1:refnode*ndim);
 
 %%%%%% DYNAMIC ANALYSIS
 %% %%% PART 1: MODAL ANALYSIS
