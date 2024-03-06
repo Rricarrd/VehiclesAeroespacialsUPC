@@ -37,7 +37,7 @@ dir = 'Y';
 [w_error,mass] = reactionsCheck(M,F,g,DirichlettDOF,dir);
 
 % Displacements of reference node
-u_ref=u((refnode-1)*ndim+1:refnode*ndim)*10^6;
+u_ref=u((refnode-1)*ndim+1:refnode*ndim)*10^6  % back to um;
 
 % Forces at supports
 F_supports = F(DirichlettDOF);
@@ -115,15 +115,14 @@ FREQ_HZ_U = FREQ_U/(2*pi);
 % Build the displacements for each node
 MODES_TOT_U=zeros(TotalDOF,neig);
 for i = 1:neig
-    MODES_TOT_U(DirichlettDOF, i)=0;
-    MODES_TOT_U(NeumannDOF, i)=MODES(:,i);
+    MODES_TOT_U(1:TotalDOF, i)=MODES_U(:,i);
 end
 
 % Save modes in the uhdf file
 for j = 7:neig
     uhdf=zeros(nnodes,ndim);
     for i=1:ndim
-        column = MODES_TOT(:, j);
+        column = MODES_TOT_U(:, j);
         uhdf(:,i)=column(i:ndim:end)*1000; % back to mm
     end
     output_name = "Output/Part3OutputUnconstrained" + j + ".h5";
