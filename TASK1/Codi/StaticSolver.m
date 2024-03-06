@@ -1,4 +1,4 @@
-function [u,F] = StaticSolver(K,M,TotalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support,dir)
+function [u,F] = StaticSolver(K,M,TotalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support,dir,shim_size)
 
 % Calculation of the Dirichlett displacement
 if (strcmp(Part,'Part1'))
@@ -9,19 +9,25 @@ elseif(strcmp(Part,'Part2a'))
     uD((Support-1)*ndim+2)=1e-3; %m to mm 
 
 elseif(strcmp(Part,'Part2b'))
+    % DirichlettDOF(2:6:end)=[]; %Remove the y DOF to compute shim height
+    % DirichlettDOF(end+1)=(1305-1)*ndim+4; %Prescribed rotation around x
+    % DirichlettDOF(end+1)=(1305-1)*ndim+6; %Prescribed rotation around z  
+    % uD = zeros(length(DirichlettDOF),1);
+    % uD(end-1)=500e-6; %Prescribed rotation around x
+    % uD(end)=-200e-6; %Prescribed rotation around z
+    % NeumannDOF = (1:TotalDOF)';
+    % NeumannDOF(DirichlettDOF) = [];
     DirichlettDOF(2:6:end)=[]; %Remove the y DOF to compute shim height
-    DirichlettDOF(end+1)=(1305-1)*ndim+4; %Prescribed rotation around x
-    DirichlettDOF(end+1)=(1305-1)*ndim+6; %Prescribed rotation around z  
+    DirichlettDOF=vertcat(DirichlettDOF,(1305-1)*ndim+[1:6]'); %Prescribed rotation around x
     uD = zeros(length(DirichlettDOF),1);
-    uD(end-1)=500e-6; %Prescribed rotation around x
+    uD(end-2)=500e-6; %Prescribed rotation around x
     uD(end)=-200e-6; %Prescribed rotation around z
     NeumannDOF = (1:TotalDOF)';
     NeumannDOF(DirichlettDOF) = [];
 elseif(strcmp(Part,'ShimCheck'))
     uD = zeros(length(DirichlettDOF),1);
-      uD(2:6:end)=[0.0333 0.0602 0.0289 -0.0432 -0.0621 -0.0172]; %ushim-mean(ushim)
-      %uD(2:6:end)=[0.992 0.955 0.954 1.054 1.053 0.991]; %VIGILAR
-    
+      uD(2:6:end)=shim_size;
+        
 
 end
 
