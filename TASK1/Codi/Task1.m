@@ -3,10 +3,11 @@ clc;
 %% %%%% PREPROCESSING
 %INPUT PARAMETERS
 ndim=6;
+nsuports=6;
 g=9.81;
 fixnodes=[10735 13699 16620 19625 22511 4747];
 refnode=1305;
-
+LATEX=0; %Parameter that controls the output for inserting in the LaTeX document
 % LOADING DATA
 load("fe_model.mat");
 
@@ -30,11 +31,27 @@ K = K*1000; % From N/mm to N/m
 % BODY FORCES SOLUTION
 Part='Part1';
 Support=1;
-dir = 'Y';
+dir = 'Z';
 [u,F] = StaticSolver(K,M,TotalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support,dir);
 
+if(LATEX)
+    Faux=F(DirichlettDOF);
+    Fresults=zeros(nsuports,ndim);
+    for i=1:ndim
+        Fresults(:,i)=Faux(i:ndim:end); 
+    end
+    for j=1:nsuports
+        for i=1:ndim-1
+            fprintf('%.2f & \n',Fresults(j,i))
+        end
+        fprintf('%.2f \\\\ \\hline \n',Fresults(j,i+1))
+        fprintf('\\textbf{Suport %d} & \n',j+1)
+    end
+    Fcheck(1,:)=sum(Fresults,1);
+end 
 %%% REACTIONS CHECK
 [w_error,mass] = reactionsCheck(M,F,g,DirichlettDOF,dir);
+
 
 % Displacements of reference node
 u_ref=u((refnode-1)*ndim+1:refnode*ndim)*10^6;
@@ -72,10 +89,11 @@ Part='Part2b';
 
 u_shim=u_shim(DirichlettDOF);
 u_shim=u_shim(2:6:end);
+shim_size=1+u_shim;
 
 Part='ShimCheck';
-[u_check,F_check] = StaticSolver(K,M,TotalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support,dir);
-u_ref_check=u_check((refnode-1)*ndim+1:refnode*ndim);
+[u_check,F_check] = StaticSolver(K,M,TotalDOF,nnodes,g,DirichlettDOF,NeumannDOF,ndim,Part,Support,dir,shim_size);
+u_ref_check=u_check((refnode-1)*ndim+1:refnode*ndim)*1e+6;
 
 %%%%%% DYNAMIC ANALYSIS
 %% %%% PART 1: MODAL ANALYSIS
