@@ -26,9 +26,8 @@ elseif(strcmp(Part,'Part2b'))
     NeumannDOF(DirichlettDOF) = [];
 elseif(strcmp(Part,'ShimCheck'))
     uD = zeros(length(DirichlettDOF),1);
-      %uD(2:6:end)=1e-3+[0.0333 0.0602 0.0289 -0.0432 -0.0621 -0.0172]; %ushim-mean(ushim)
       uD(2:6:end)=shim_size;
-        %1e-3+[0.0074 0.0432 0.0438 -0.0515 -0.0512 0.0083]
+        
 
 end
 
